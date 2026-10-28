@@ -79,17 +79,17 @@ try {
     if (-not $PackagePath -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'release.json'))) { $PackagePath = $PSScriptRoot }
     if (-not $PackagePath) {
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-        $endpoint = if ($Version -eq 'latest') { 'latest' } else { 'tags/' + $Version }
-        $release = Invoke-RestMethod -Uri ('https://api.github.com/repos/' + $repository + '/releases/' + $endpoint) -Headers @{ 'User-Agent'='DeskDots-Installer'; Accept='application/vnd.github+json' }
-        $Version = $release.tag_name
+        if ($Version -eq 'latest') {
+            $latest = Invoke-WebRequest -UseBasicParsing -Method Head -Uri ('https://github.com/' + $repository + '/releases/latest') -TimeoutSec 30
+            $Version = $latest.BaseResponse.ResponseUri.Segments[-1]
+        }
         if ($Version -notmatch '^v\d+\.\d+\.\d+$') { throw 'Unsupported release version.' }
         $zipName = 'DeskDots-' + $Version + '-windows-x64.zip'
         $zipPath = Join-Path $workDir $zipName
         $checksumPath = Join-Path $workDir 'SHA256SUMS.txt'
         foreach ($download in @(@{Name=$zipName; Path=$zipPath}, @{Name='SHA256SUMS.txt'; Path=$checksumPath})) {
-            $asset = @($release.assets | Where-Object { $_.name -eq $download.Name })
-            if ($asset.Count -ne 1 -or -not $asset[0].browser_download_url.StartsWith(('https://github.com/' + $repository + '/releases/download/' + $Version + '/'))) { throw ('Missing release asset: ' + $download.Name) }
-            Invoke-WebRequest -UseBasicParsing -Uri $asset[0].browser_download_url -OutFile $download.Path
+            $assetUrl = 'https://github.com/' + $repository + '/releases/download/' + $Version + '/' + $download.Name
+            Invoke-WebRequest -UseBasicParsing -Uri $assetUrl -OutFile $download.Path -TimeoutSec 120
         }
         $match = [regex]::Match([IO.File]::ReadAllText($checksumPath), ('(?m)^([a-fA-F0-9]{64})  ' + [regex]::Escape($zipName) + '\r?$'))
         if (-not $match.Success -or (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash -ne $match.Groups[1].Value) { throw 'Release SHA-256 verification failed.' }
