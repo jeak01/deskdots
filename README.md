@@ -2,6 +2,12 @@
 
 Windows 桌面小组件：Dot 回复、本机 Codex 任务状态与 Codex 额度。
 
+## 快速安装
+
+支持让目标 Windows 电脑上的 Codex 完成安装和配置，也可以下载 [最新便携安装包](https://github.com/jeak01/deskdots/releases/latest)，解压后双击 `install.cmd`。详见 [安装说明与可复制的一句话](INSTALL.md)。
+
+> 请在这台 Windows 电脑上安装并配置 DeskDots：https://github.com/jeak01/deskdots 。先阅读 INSTALL.md，检查安装脚本，再使用最新正式 Release 完成安装、Codex 路径检测、MCP 和 Skill 配置，启动并验证，然后告诉我需要在自己的 Dot 会话完成的同步步骤。
+
 ## 运行
 
 首次从源码使用时，先按下方「构建和验证」编译，生成 `dist/DeskDots.exe`。
@@ -33,6 +39,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Test
 ```
 
 编译器为 Windows 自带 .NET Framework csc；构建不下载依赖。测试覆盖账号隔离、消息来源/角色过滤、错误线程拒绝、幂等发布、多额度桶、缺失额度、时间戳、旧消息不重放和新消息去重。`--ui-smoke <报告路径>` 离线验证真实卡片尺寸、非置顶、不抢焦点与十秒通知关闭，不读取真实消息。
+
+打包不含本机连接设置的便携版本（生成 ZIP、安装脚本与 SHA-256 清单）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\package.ps1 -Version v0.1.0
+```
+
+`python tests/installer.py --codex <codex.exe 路径>` 可在项目的隔离临时目录验证安装、配置保留、重复执行与文件校验，不创建快捷方式或启动组件。
 
 只读诊断（写出数量和额度，不包含回复正文或登录数据）：
 

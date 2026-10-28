@@ -1,0 +1,4 @@
+interface:
+  display_name: "DeskDots"
+  short_description: "Install, configure, and repair the DeskDots Windows widget"
+  default_prompt: "Use $deskdots to install and configure DeskDots on this Windows computer."

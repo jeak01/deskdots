@@ -1,10 +1,10 @@
-param([switch]$Test)
+param([switch]$Test, [switch]$Portable, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
 $compiler = Join-Path $framework 'csc.exe'
 if (-not (Test-Path -LiteralPath $compiler)) { throw 'Windows .NET Framework 4.x compiler is required.' }
-$outputDir = Join-Path $taskRoot 'dist'
+$outputDir = if ($OutputDirectory) { [IO.Path]::GetFullPath($OutputDirectory) } else { Join-Path $taskRoot 'dist' }
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 $references = @('System.dll','System.Core.dll','System.Web.Extensions.dll','System.Drawing.dll','System.Windows.Forms.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll','System.Xaml.dll')
 $compilerArgs = @('/nologo','/target:winexe','/platform:x64','/optimize+','/utf8output','/codepage:65001',('/out:' + (Join-Path $outputDir 'DeskDots.exe')),('/win32manifest:' + (Join-Path $taskRoot 'src\app.manifest')),('/resource:' + (Join-Path $taskRoot 'src\App.xaml') + ',DeskDots.App.xaml'))
@@ -17,7 +17,10 @@ Copy-Item -LiteralPath (Join-Path $taskRoot 'README.md') -Destination (Join-Path
 New-Item -ItemType Directory -Path (Join-Path $outputDir 'integration') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $taskRoot 'integration\DOT-SETUP.md') -Destination (Join-Path $outputDir 'integration\DOT-SETUP.md') -Force
 Copy-Item -LiteralPath (Join-Path $taskRoot 'assets') -Destination $outputDir -Recurse -Force
-if ($env:CODEX_HOME -and $env:CODEX_APP_RUNTIME_CLI_PATH) {
+if ($Portable -and (Test-Path -LiteralPath (Join-Path $outputDir 'DeskDots.connection.json'))) {
+    Remove-Item -LiteralPath (Join-Path $outputDir 'DeskDots.connection.json')
+}
+if (-not $Portable -and $env:CODEX_HOME -and $env:CODEX_APP_RUNTIME_CLI_PATH) {
     @{codexHome=$env:CODEX_HOME;codexExe=$env:CODEX_APP_RUNTIME_CLI_PATH} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputDir 'DeskDots.connection.json') -Encoding UTF8
 }
 if ($Test) {
