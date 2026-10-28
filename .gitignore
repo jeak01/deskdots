@@ -1,0 +1,5 @@
+.generated/
+.local/
+dist/
+tests/tmp/
+*.user

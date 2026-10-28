@@ -1,0 +1,13 @@
+# DeskDots interface
+
+This is a native WPF desktop companion. The redesign follows the installed `landing-page-design` and `redesign-existing-projects` skills from elayadesign. Web specific marketing sections do not apply to the desktop utility.
+
+The interface uses a neutral graphite palette: canvas #181818, surfaces #1F1F1F, raised controls #272727, strokes #313131. A restrained blue #91B7F0 highlights actions, active states and quota progress. Warning and error colors convey data states only.
+
+Geist is the primary typeface, with Microsoft YaHei UI for Chinese glyphs. Numeric quota values use tabular figures. Type follows 12/16, 14/20, 16/24, 18/28, 20/28 and 48 display steps. Spacing follows 4, 8, 12, 16, 24 and 32 device independent pixels. Native window geometry, borders and icon dimensions retain the sizes needed for Windows interaction.
+
+All interactive controls have hover, pressed and keyboard focus states. Phosphor regular icons replace font glyphs. The persistent card is 320 × 128 device independent pixels with large quota figures on the right and icon controls on the left. Tasks and settings live in an on-demand panel with inline validation. Its width follows the 320 pixel main card, and its height follows content. Body copy and compact controls use the 12/16 step; a whole task row is clickable, without a separate oversized action. Long lists are height-capped and scroll. Repeated brand headers, fixed minimum heights and filler metadata are omitted. Hover uses a 300 ms opacity transition. A new Dot reply appears in a separate card below the persistent card, stays for ten seconds and fades for 500 ms. With Windows client animations disabled it closes directly. No background gradients or perpetual animations are used.
+
+There is no permanent message list or empty state. Only new Dot replies trigger a transient card; startup history and repeated polls do not replay notifications. The message icon reopens the latest reply. Message text remains selectable and copyable. Inactive windows sit behind ordinary application windows, above the desktop background, without taking focus. The desktop card is not represented on the taskbar. No synthetic content appears in the live widget.
+
+Clickable content keeps an explicit inset in every state: text-bearing controls have at least 8 DIP on each horizontal edge, icon-only controls at least 4 DIP. Compact task counts size to content and cap at 99+ rather than clipping into their hit area. The offline UI audit measures transformed content bounds in normal, hover, focus and pressed states across the main card, task rows, collapsed/expanded settings and message controls.
