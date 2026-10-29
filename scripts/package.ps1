@@ -11,7 +11,7 @@ $payload = Join-Path $packageWork 'payload'
 New-Item -ItemType Directory -Path $payload -Force | Out-Null
 & (Join-Path $PSScriptRoot 'build.ps1') -Test -Portable -OutputDirectory (Join-Path $packageWork 'build')
 $build = Join-Path $packageWork 'build'
-foreach ($item in @('DeskDots.exe','assets','integration','README.md')) {
+foreach ($item in @('DeskDots.exe','start.ps1','assets','integration','README.md')) {
     Copy-Item -LiteralPath (Join-Path $build $item) -Destination $payload -Recurse
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'INSTALL.md') -Destination $payload

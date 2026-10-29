@@ -6,11 +6,27 @@ Windows 桌面小组件：Dot 回复、本机 Codex 任务状态与 Codex 额度
 
 支持让目标 Windows 电脑上的 Codex 完成安装和配置，也可以下载 [最新便携安装包](https://github.com/jeak01/deskdots/releases/latest)，解压后双击 `install.cmd`。详见 [安装说明与可复制的一句话](INSTALL.md)。
 
-> 请在这台 Windows 电脑上安装并配置 DeskDots：https://github.com/jeak01/deskdots 。先阅读 INSTALL.md，检查安装脚本，再使用最新正式 Release 完成安装、Codex 路径检测、MCP 和 Skill 配置，启动并验证，然后告诉我需要在自己的 Dot 会话完成的同步步骤。
+> 请在这台 Windows 电脑上安装并配置 DeskDots：https://github.com/jeak01/deskdots 。先阅读 INSTALL.md，检查安装脚本，再使用最新正式 Release 完成安装、Codex 路径检测、MCP 和 Skill 配置；按照说明用 start.ps1 独立启动，读取启动报告确认成功，让组件在关闭 Codex 后继续运行，然后告诉我需要在自己的 Dot 会话完成的同步步骤。
 
 ## 运行
 
 首次从源码使用时，先按下方「构建和验证」编译，生成 `dist/DeskDots.exe`。
+
+### 让 Codex / Agent 独立启动（推荐）
+
+把这段话发给能访问本机的 Agent：
+
+> 请按照 https://github.com/jeak01/deskdots/blob/main/INSTALL.md 的「Agent 独立启动」启动我已安装的 DeskDots。使用项目的 start.ps1，保留原数据目录，读取 launch-report.json 确认 started=true 并核对 PID。如果组件已在运行，请先说明需要从托盘退出后重新独立启动；如果执行环境禁止独立启动，请报告失败原因。不要设置开机启动。
+
+源码构建后可直接运行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\dist\start.ps1
+```
+
+新版便携包和安装目录也包含 `start.ps1`。脚本通过 Windows 的 `CREATE_BREAKAWAY_FROM_JOB` 独立启动组件，等待窗口就绪，将 PID 和结果写入数据目录的 `launch-report.json`。启动命令结束后组件继续常驻，用户可从托盘退出。环境禁止脱离进程组时会返回失败；普通 `Start-Process` 或 `cmd /c start` 不能作为已独立启动的证明。已有旧版程序也可以搭配当前仓库或 Skill 中的启动脚本，具体命令见 [安装说明](INSTALL.md#agent-独立启动)。
+
+### 手动启动
 
 双击 `dist/DeskDots.exe`。Windows 10/11 x64，使用系统自带 .NET Framework 4.7.2+、WPF 和 winsqlite3，不需要 Node、Python 或 API Key。常驻窗口为 320 × 128 的小卡片，默认放在桌面右上角。左侧为图标操作，右侧为剩余额度大字。支持拖动、托盘和 F5 刷新；Esc 收进托盘，双击托盘图标恢复，右键托盘可退出。常驻卡片不占任务栏。
 
@@ -47,6 +63,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\package.ps1 -Version v0.1.0
 ```
 
 `python tests/installer.py --codex <codex.exe 路径>` 可在项目的隔离临时目录验证安装、配置保留、重复执行与文件校验，不创建快捷方式或启动组件。
+
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\lifecycle.ps1` 用虚构数据验证普通启动的连带退出，以及项目启动脚本在启动器退出、进程组关闭后仍保持组件运行。它还验证已运行实例和禁止独立启动的环境会明确报错，不读取真实账号数据。
 
 只读诊断（写出数量和额度，不包含回复正文或登录数据）：
 

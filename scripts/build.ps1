@@ -14,6 +14,7 @@ $compilerArgs += Get-ChildItem -LiteralPath (Join-Path $taskRoot 'src') -Filter 
 & $compiler @compilerArgs
 if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
 Copy-Item -LiteralPath (Join-Path $taskRoot 'README.md') -Destination (Join-Path $outputDir 'README.md') -Force
+Copy-Item -LiteralPath (Join-Path $taskRoot 'skills\deskdots\scripts\start.ps1') -Destination (Join-Path $outputDir 'start.ps1') -Force
 New-Item -ItemType Directory -Path (Join-Path $outputDir 'integration') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $taskRoot 'integration\DOT-SETUP.md') -Destination (Join-Path $outputDir 'integration\DOT-SETUP.md') -Force
 Copy-Item -LiteralPath (Join-Path $taskRoot 'assets') -Destination $outputDir -Recurse -Force

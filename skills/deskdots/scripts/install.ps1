@@ -145,7 +145,7 @@ try {
     $exePath = Join-Path $versionDir 'DeskDots.exe'
     $running = @(Get-Process -Name DeskDots -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith(($InstallDir.TrimEnd('\') + '\'), [StringComparison]::OrdinalIgnoreCase) })
     foreach ($instance in $running) {
-        if ($instance.Path -ne $exePath -or (Get-FileHash -LiteralPath $instance.Path -Algorithm SHA256).Hash -ne $manifest.files.'DeskDots.exe') {
+        if (-not $NoStart -or $instance.Path -ne $exePath -or (Get-FileHash -LiteralPath $instance.Path -Algorithm SHA256).Hash -ne $manifest.files.'DeskDots.exe') {
             [void]$instance.CloseMainWindow()
             if (-not $instance.WaitForExit(5000)) { throw 'Please exit the installed DeskDots from its tray menu, then retry.' }
         }
@@ -219,9 +219,15 @@ try {
         if ($health.quotaError) { $nextActions.Add('Quota is not connected; check the Codex login and network, then refresh the widget.') }
     }
     $nextActions.Add('For Dot replies, send the generated Dot synchronization instructions to your own Dot conversation and connect this computer if needed.')
-    $report = [ordered]@{ version=$Version; installedExe=$exePath; dataDir=$DataDir; codexHome=$CodexHome; codexExe=$CodexExe; mcp=$mcpStatus; skillDirectory=$SkillDirectory; shortcut=$shortcutPath; settingsBackup=$settingsBackup; configBackup=$configBackup; diagnostics=$diagnosticPath; nextActions=@($nextActions.ToArray()) }
+    $launcherPath = Join-Path $versionDir 'start.ps1'
+    # Updated skills can independently launch older, verified release executables.
+    if (-not (Test-Path -LiteralPath $launcherPath)) { $launcherPath = Join-Path $PSScriptRoot 'start.ps1' }
+    $report = [ordered]@{ version=$Version; installedExe=$exePath; dataDir=$DataDir; codexHome=$CodexHome; codexExe=$CodexExe; mcp=$mcpStatus; skillDirectory=$SkillDirectory; shortcut=$shortcutPath; settingsBackup=$settingsBackup; configBackup=$configBackup; diagnostics=$diagnosticPath; launcher=$launcherPath; startRequested=(-not $NoStart); launchReport=(Join-Path $DataDir 'launch-report.json'); nextActions=@($nextActions.ToArray()) }
     Write-Json (Join-Path $DataDir 'installation.json') $report
-    if (-not $NoStart) { Start-Process -FilePath $exePath -ArgumentList @('--data-dir',(Quote-Argument $DataDir)) -WindowStyle Hidden | Out-Null }
+    if (-not $NoStart) {
+        if (-not (Test-Path -LiteralPath $launcherPath)) { throw 'This older package has no independent launcher. Use start.ps1 from the current DeskDots skill with -ExePath and -DataDir, or install a newer release.' }
+        & $launcherPath -ExePath $exePath -DataDir $DataDir | Out-Null
+    }
     $report | ConvertTo-Json -Depth 6
 } finally {
     $resolvedWork = [IO.Path]::GetFullPath($workDir)

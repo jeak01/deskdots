@@ -56,6 +56,9 @@ report = run_install()
 exe = pathlib.Path(report['installedExe'])
 assert exe.is_file() and (exe.parent / 'assets/fonts/Geist-Regular.ttf').is_file()
 assert (skill / 'SKILL.md').is_file() and (skill / 'scripts/install.ps1').is_file()
+assert (skill / 'scripts/start.ps1').is_file() and (exe.parent / 'start.ps1').is_file()
+assert (skill / 'scripts/start.ps1').read_bytes() == (exe.parent / 'start.ps1').read_bytes()
+assert pathlib.Path(report['launcher']) == exe.parent / 'start.ps1' and not report['startRequested']
 assert report['mcp'] == 'configured'
 settings = json.loads((data / 'settings.json').read_text(encoding='utf-8-sig'))
 assert settings['left'] == 42 and settings['customSetting'] == 'preserved'
